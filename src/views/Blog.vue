@@ -18,6 +18,14 @@ onMounted(async () => {
   <div class="page-container">
     <navigateBar />
 
+    <div class="blog-header">
+      <img src="/blog-logo.svg" alt="Blog Logo" class="blog-logo" />
+      <div class="blog-header-text">
+        <h1 class="blog-header-title">Blog</h1>
+        <p class="blog-header-subtitle">Thoughts, notes, and tutorials</p>
+      </div>
+    </div>
+
     <div class="blog-content">
         <div v-for="post in posts" :key="post.slug" class="blog-post">
             <h2 class="blog-title">{{ post.title }}</h2>
@@ -61,6 +69,32 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.blog-header {
+  padding: 20px;
+  max-width: 900px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.blog-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(52,152,219,0.25);
+}
+.blog-header-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+.blog-header-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 2px 0 0;
 }
 
 .blog-content {

@@ -2,7 +2,7 @@ post:
   - slug: "vuedeployment"
     title: "Deploying a Vue Project"
     date: August 20, 2025
-    tags: ["Tech","Vue", "Nginx", "Deployment"]
+    tags: ["Tech","Vue", "Nginx"]
     summary: "A guide on how to deploy a Vue.js project with Nginx."
     file: "vue-deployment.md"
 
