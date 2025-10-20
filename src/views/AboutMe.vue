@@ -193,7 +193,7 @@ const mapTagClass = (tag) => {
 
 .about-me-content {
   flex-grow: 1;
-  padding: 60px 40px;
+  padding: 40px 40px;
   max-width: 1100px;
   margin: 0 auto;
   width: 100%;
@@ -527,6 +527,7 @@ const mapTagClass = (tag) => {
 }
 
 .contact-section {
+  margin-top: 20px;
   border: 1px solid #e5eef8;
   border-radius: 14px;
   background: linear-gradient(180deg, #f9fbff 0%, #ffffff 100%);

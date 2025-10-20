@@ -270,6 +270,10 @@ onMounted(async () => {
     min-height: calc(100vh - 60px);
     margin-top: 60px;
   }
+
+  .blog-search{
+    padding: 30px 20px 0 20px;
+  }
 }
 
 @media screen and (max-width: 480px) {
