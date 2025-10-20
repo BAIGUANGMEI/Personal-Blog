@@ -1,0 +1,21 @@
+post:
+  - slug: "vuedeployment"
+    title: "Deploying a Vue Project"
+    date: August 20, 2025
+    tags: ["Tech","Vue", "Nginx", "Deployment"]
+    summary: "A guide on how to deploy a Vue.js project with Nginx."
+    file: "vue-deployment.md"
+
+  - slug: "cambridge"
+    title: "Visit to University of Cambridge"
+    date: August 16, 2025
+    tags: ["Travel","Academic"]
+    summary: "I visited the University of Cambridge and attended business courses."
+    file: "cambridge.md"
+
+  - slug: "somephotos"
+    title: "Some Photos"
+    date: August 10, 2025
+    tags: ["Photo","Travel","Daily"]
+    summary: "It will show some photos I took during my travels or in my daily life."
+    file: "somephotos.md"
