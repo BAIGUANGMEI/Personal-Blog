@@ -1,15 +1,35 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import navigateBar from "../components/navigateBar.vue";
 import yaml from "js-yaml";
 
 const posts = ref([]);
+const query = ref("");
+const filteredPosts = computed(() => {
+  const q = query.value.trim().toLowerCase();
+  if (!q) return posts.value;
+  return (posts.value || []).filter(post => {
+    const title = String(post.title || "").toLowerCase();
+    const summary = String(post.summary || "").toLowerCase();
+    const slug = String(post.slug || "").toLowerCase();
+    const date = String(post.date || "").toLowerCase();
+    const tags = Array.isArray(post.tags) ? post.tags.map(t => String(t).toLowerCase()) : [];
+    return (
+      title.includes(q) ||
+      summary.includes(q) ||
+      slug.includes(q) ||
+      date.includes(q) ||
+      tags.some(t => t.includes(q))
+    );
+  });
+});
+const clearSearch = () => { query.value = ""; };
 
 onMounted(async () => {
   const res = await fetch(`/posts/blog.yaml?v=${__BUILD_ID__}`, { cache: 'no-store' });
   const yamlText = await res.text();
-  const blogdata = yaml.load(yamlText);
-  posts.value = blogdata.post;
+  const blogdata = yaml.load(yamlText) || {};
+  posts.value = Array.isArray(blogdata.post) ? blogdata.post : [];
   
 });
 </script>
@@ -18,16 +38,19 @@ onMounted(async () => {
   <div class="page-container">
     <navigateBar />
 
-    <div class="blog-header">
-      <img src="/blog-logo.svg" alt="Blog Logo" class="blog-logo" />
-      <div class="blog-header-text">
-        <h1 class="blog-header-title">Blog</h1>
-        <p class="blog-header-subtitle">Thoughts, notes, and tutorials</p>
-      </div>
+    <div class="blog-search">
+      <input
+        class="search-input"
+        type="text"
+        v-model="query"
+        placeholder="Search posts by title, summary or tags..."
+      />
+      <button v-if="query" class="clear-btn" @click="clearSearch">Clear</button>
     </div>
 
     <div class="blog-content">
-        <div v-for="post in posts" :key="post.slug" class="blog-post">
+        <div v-if="filteredPosts.length === 0" class="empty-hint">No articles found. </div>
+        <div v-for="post in filteredPosts" :key="post.slug" class="blog-post">
             <h2 class="blog-title">{{ post.title }}</h2>
             <p class="blog-summary">{{ post.summary }}</p>
 
@@ -71,30 +94,47 @@ onMounted(async () => {
   align-items: center;
 }
 
-.blog-header {
-  padding: 20px;
+.blog-search {
+  padding: 0 20px;
   max-width: 900px;
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
 }
-.blog-logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  box-shadow: 0 6px 16px rgba(52,152,219,0.25);
-}
-.blog-header-title {
-  font-size: 24px;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0;
-}
-.blog-header-subtitle {
+.search-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   font-size: 14px;
+  outline: none;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.search-input:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 4px rgba(147, 197, 253, 0.25);
+}
+.clear-btn {
+  padding: 8px 12px;
+  font-size: 13px;
+  border: 1px solid #d7e3f2;
+  border-radius: 8px;
+  background: #fff;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.clear-btn:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+.empty-hint {
+  padding: 0 20px;
+  max-width: 900px;
+  width: 100%;
   color: #64748b;
-  margin: 2px 0 0;
+  font-size: 14px;
 }
 
 .blog-content {
