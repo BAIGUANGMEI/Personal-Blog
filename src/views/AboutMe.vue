@@ -92,11 +92,17 @@ const mapTagClass = (tag) => {
           <section class="hero animated-item" style="animation-delay: 0.2s">
             <img class="avatar-img" :src="data.myinfo.avatar" alt="Mei Zhihan Avatar" />
             <h1 class="hero-title">MEIZHIHAN</h1>
-            <p class="hero-subtitle">Keep silence before you succeed</p>
-            <div class="hero-actions">
-              <router-link to="/blog" class="btn primary">Blog</router-link>
-              <router-link to="/timeline" class="btn outline">Timeline</router-link>
-              <router-link to="/bulletinboard" class="btn outline">Bulletin Board</router-link>
+            <p class="hero-subtitle">“Keep silence before you succeed”</p>
+            <div class="hero-socials">
+              <a href="https://github.com/BAIGUANGMEI" target="_blank" rel="noopener" aria-label="GitHub">
+                <img src="/github.svg" alt="GitHub" class="hero-social-img" />
+              </a>
+              <a href="https://x.com/meizhihan111" target="_blank" rel="noopener" aria-label="X">
+                <img src="/x.svg" alt="X" class="hero-social-img" />
+              </a>
+              <a href="https://www.linkedin.com/in/zhihan-mei-599008374/" target="_blank" rel="noopener" aria-label="LinkedIn">
+                <img src="/linkedin.svg" alt="LinkedIn" class="hero-social-img" />
+              </a>
             </div>
           </section>
 
@@ -336,6 +342,23 @@ const mapTagClass = (tag) => {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+.hero-socials {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+.hero-social-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.hero-socials a:hover .hero-social-img {
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
 }
 .btn {
   display: inline-block;
