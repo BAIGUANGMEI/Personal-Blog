@@ -15,7 +15,7 @@ You can visit it at [www.peakfound.com](https://www.peakfound.com/).
 ## Build Your Own Website by this Repository
 1. Clone this repository:
    ```bash
-   git clone https://github.com/meizhihan/meizhihan.git
+   git clone https://github.com/BAIGUANGMEI/Personal-Blog.git
    ```
 2. Install dependencies:
    ```bash
