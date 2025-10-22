@@ -36,7 +36,8 @@ onMounted(async () => {
     const res = await fetch(`/posts/blog.yaml?v=${__BUILD_ID__}`, { cache: 'no-store' });
     const yamlText = await res.text();
     const blogdata = yaml.load(yamlText) || {};
-    posts.value = Array.isArray(blogdata.post) ? blogdata.post : [];
+    const arr = Array.isArray(blogdata.post) ? blogdata.post : [];
+    posts.value = arr.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
   } catch (e) {
     console.error('Failed to load blog.yaml', e);
     posts.value = [];
@@ -114,7 +115,7 @@ const mapTagClass = (tag) => {
             <h2 class="section-title">Latest Blog</h2>
             <div class="blog-grid">
               <div
-                v-for="post in posts.slice(0,4)"
+                v-for="post in posts.slice(0,3)"
                 :key="post.slug"
                 class="blog-item animated-item"
                 role="button"
