@@ -169,7 +169,7 @@ p code{
   background-color: #f6f8fa;
   border: 1px solid #eee;
   border-radius: 6px;
-  padding: 4px 6px;
+  padding: 1px 2px;
 }
 
 .code-copy-btn {
