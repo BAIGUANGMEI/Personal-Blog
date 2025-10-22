@@ -1,4 +1,11 @@
 post:
+  - slug: "statistics"
+    title: "Statistics"
+    date: October 21, 2025
+    tags: ["Tech","Statistics"]
+    summary: "Just record my learning of statistics."
+    file: "statistics.md"
+
   - slug: "vuedeployment"
     title: "Deploying a Vue Project"
     date: August 20, 2025

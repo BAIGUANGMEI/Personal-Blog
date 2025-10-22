@@ -7,6 +7,8 @@ import hljs from 'highlight.js/lib/core';
 import bash from 'highlight.js/lib/languages/bash';
 import nginx from 'highlight.js/lib/languages/nginx';
 import 'highlight.js/styles/github.min.css'
+import markdownItMathTemml from "markdown-it-math/temml";
+
 
 const route = useRoute();
 const md = new MarkdownIt({
@@ -25,6 +27,9 @@ const md = new MarkdownIt({
     }
   }
 });
+
+md.use(markdownItMathTemml);
+
 const content = ref("");
 
 const addCopyButton = () =>{
@@ -97,6 +102,7 @@ onMounted(() => {
 </template>
 
 <style>
+
 .page-container {
   margin-top: 100px;
   width: 100%;
