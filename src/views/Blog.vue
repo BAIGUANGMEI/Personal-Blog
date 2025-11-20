@@ -25,11 +25,44 @@ const filteredPosts = computed(() => {
 });
 const clearSearch = () => { query.value = ""; };
 
+/** Tag color class mapping（与 AboutMe 统一） */
+const mapTagClass = (tag) => {
+  const t = String(tag || "").toLowerCase();
+  if (["tech"].includes(t)) return "tag-tech";
+  if (["vue"].includes(t)) return "tag-vue";
+  if (["nginx"].includes(t)) return "tag-nginx";
+  if (["statistics"].includes(t)) return "tag-statistics";
+  if (["travel"].includes(t)) return "tag-travel";
+  if (["photo"].includes(t)) return "tag-photo";
+  if (["academic"].includes(t)) return "tag-academic";
+  return "tag-default";
+};
+
+/** 估算阅读时长（按 200 wpm） */
+const estimateReadingMinutes = (text) => {
+  const words = String(text || "")
+    .replace(/[$\\`*#_~<>\-]+/g, " ")
+    .replace(/[\r\n]+/g, " ")
+    .split(/\s+/)
+    .filter(Boolean).length;
+  const wpm = 200;
+  return Math.max(1, Math.round(words / wpm));
+};
+
 onMounted(async () => {
   const res = await fetch(`/posts/blog.yaml?v=${__BUILD_ID__}`, { cache: 'no-store' });
   const yamlText = await res.text();
   const blogdata = yaml.load(yamlText) || {};
   posts.value = Array.isArray(blogdata.post) ? blogdata.post : [];
+  // 计算所有文章的阅读时长
+  await Promise.all((posts.value || []).map(async (p) => {
+    try {
+      const file = p.file || `${p.slug}.md`;
+      const r = await fetch(`/posts/${file}?v=${__BUILD_ID__}`, { cache: 'no-store' });
+      const t = await r.text();
+      p.readingTime = estimateReadingMinutes(t);
+    } catch {}
+  }));
   
 });
 </script>
@@ -60,8 +93,9 @@ onMounted(async () => {
 
             <div class="blog-meta">
                 <span class="blog-date">{{ post.date }}</span>
+                <span v-if="post.readingTime" class="blog-readtime">· ~{{ post.readingTime }} min read</span>
                 <div v-if="post.tags && post.tags.length > 0" class="blog-tags">
-                  <span v-for="tag in post.tags" :key="tag" class="blog-tag blog-tag-green">
+                  <span v-for="tag in post.tags" :key="tag" class="blog-tag" :class="mapTagClass(tag)">
                       {{ tag }}
                   </span>
                 </div>
@@ -218,13 +252,59 @@ onMounted(async () => {
 }
 
 .blog-tag {
-  font-size: 0.9rem;
-  color: #ffffff;
-  background-color: rgba(92, 92, 92, 0.5);
-  padding: 5px 12px;
-  border-radius: 8px;
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
   font-weight: 500;
-  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+/* Tag color mapping（统一 AboutMe） */
+.blog-tag.tag-tech {
+  color: #2563eb;
+  background: #ecf2ff;
+  border-color: #dbe7ff;
+}
+.blog-tag.tag-vue {
+  color: #16a34a;
+  background: #eaf9f0;
+  border-color: #cdeeda;
+}
+.blog-tag.tag-nginx {
+  color: #059669;
+  background: #eafaf5;
+  border-color: #cdeee3;
+}
+.blog-tag.tag-statistics {
+  color: #7c3aed;
+  background: #efe7ff;
+  border-color: #e2d9ff;
+}
+.blog-tag.tag-travel {
+  color: #f97316;
+  background: #fff3e8;
+  border-color: #fde3cd;
+}
+.blog-tag.tag-photo {
+  color: #dc2626;
+  background: #fde2e2;
+  border-color: #f9caca;
+}
+.blog-tag.tag-academic {
+  color: #0ea5e9;
+  background: #e6f6ff;
+  border-color: #cdeeff;
+}
+.blog-tag.tag-default {
+  color: #475569;
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+
+.blog-readtime {
+  font-size: 0.85rem;
+  color: #6b7280;
 }
 
 
