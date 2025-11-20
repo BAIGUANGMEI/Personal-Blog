@@ -130,6 +130,7 @@ const moveBy = (index) => {
   container.style.transform = `translateX(${-offset}px)`;
 }
 
+
 onMounted(() => {
   initialLocaiton(); 
   checkScreenSize(); 
@@ -139,42 +140,42 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', checkScreenSize);
 });
+
+// 年份解析工具：从日期字符串中提取年份
+const getYear = (dateStr) => {
+  const m = String(dateStr || '').match(/(\d{4})/);
+  return m ? m[1] : '';
+};
 </script>
 
 <template>
   <div class="page-container">
     <navigateBar />
 
-    <div class="timeline-section-wrapper">
-      <div class="time-line">
-          <div class="time-line-content">
-              <div
-                class="time-line-item"
-                :class="{ active: currentIndex === index }"
-                v-for="(item, index) in timeLineData"
-                :key="item.id"
-                @click="moveBy(index)">
-                  <div class="date">{{ item.date }}</div>
-              </div>
-          </div>
-          <div class="time-line-wrapper">
-            <div class="line-wrapper">
-              <div class="line">
-                  <mark class="mark"></mark>
+  <div class="timeline-section-wrapper">
+
+      <section class="vertical-timeline">
+        <div class="vt-container">
+          <template v-for="(item, idx) in timeLineData" :key="item.id">
+
+            <div v-if="idx === 0 || getYear(item.date) !== getYear(timeLineData[idx-1]?.date)" class="vt-year">{{ getYear(item.date) }}</div>
+
+            <div class="vt-item">
+              <div class="vt-marker"></div>
+              <div class="vt-card">
+                <div class="vt-card-header">
+                  <h3 class="vt-title">{{ item.contentTitle }}</h3>
+                  <span class="vt-date">{{ item.date }}</span>
+                </div>
+                <div class="vt-card-body">
+                  <img class="vt-img" :src="item.img" :alt="item.contentTitle" loading="lazy" decoding="async" />
+                  <p class="vt-detail">{{ item.content }}</p>
+                </div>
               </div>
             </div>
-          </div>
-      </div>
-
-      <div class="main-content" v-if="timeLineData[currentIndex]">
-        <div class="main-content-left">
-          <img class="main-content-img" :src="timeLineData[currentIndex].img" :alt="timeLineData[currentIndex].contentTitle" />
+          </template>
         </div>
-        <div class="main-content-right">
-          <h1 class="content-title">{{ timeLineData[currentIndex].contentTitle }}</h1>
-          <p class="main-content-detail">{{ timeLineData[currentIndex].content }}</p>
-        </div>
-      </div>
+      </section>
     </div>
   </div>
   <div class="footer">
@@ -448,4 +449,74 @@ onUnmounted(() => {
     margin-top: 5px;
   }
 }
+/* ---- Vertical Timeline styles ---- */
+.vertical-timeline { position: relative; }
+.vt-container { position: relative; }
+.vt-container::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: 16px;
+  width: 4px; border-radius: 2px;
+  background: linear-gradient(180deg, #e3effb 0%, #eaeef3 100%);
+}
+.vt-item { position: relative; margin-bottom: 40px; opacity: 1; transform: translateY(0); transition: opacity .5s ease, transform .5s ease; }
+.vt-item.inview { opacity: 1; transform: translateY(0); }
+.vt-marker {
+  position: absolute; left: 10px; top: 16px;
+  width: 16px; height: 16px; border-radius: 999px;
+  background: #3498db; border: 2px solid #fff; box-shadow: 0 0 0 2px #cfe5f7;
+}
+
+/* 年份分隔标签 */
+.vt-year {
+  display: inline-flex; align-items: center; position: relative;
+  margin: 12px 0 14px 44px; padding: 4px 12px;
+  font-weight: 600; font-size: 20px; color: #0f172a;
+  background: #fff; border: 1px solid #eaeef3; border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.vt-year::before {
+  content: ""; position: absolute; left: -28px; top: 50%; transform: translateY(-50%);
+  width: 20px; height: 1px; background: #eaeef3;
+}
+
+.vt-card {
+  background: #fff;
+  border: 1px solid #eaeef3;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.vt-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+
+.vt-card-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; padding-left: 20px;}
+
+.vt-date { color: #64748b; font-weight: 600; font-size: 14px; }
+.vt-title { font-size: 20px; font-weight: 700; color: #0f172a; margin: 0; }
+.vt-card-body { display: grid; grid-template-columns: 260px 1fr; gap: 16px; align-items: start; }
+.vt-img {
+  width: 100%; height: 180px; object-fit: contain; border-radius: 8px;
+  border: 2px solid #eee; box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  transition: transform 6s ease, filter .3s ease;
+}
+.vt-item.active .vt-img { transform: scale(1.03); }
+.vt-detail { font-size: 15px; color: #334155; line-height: 1.7; }
+
+@media screen and (max-width: 992px) {
+  .vt-card-body { grid-template-columns: 220px 1fr; }
+  .vt-img { height: 160px; }
+}
+@media screen and (max-width: 768px) {
+  .vt-card-body { grid-template-columns: 1fr; }
+  .vt-img { height: 220px; }
+}
+@media screen and (max-width: 480px) {
+  .vt-img { height: 180px; }
+}
+/* Active state visuals */
+.vt-item.active .vt-card { border-color: #cfe7ff; box-shadow: 0 8px 20px rgba(52,152,219,0.12); }
+.vt-item.active .vt-marker { background: #2563eb; box-shadow: 0 0 0 3px #93c5fd; }
+
+
 </style>
