@@ -59,7 +59,10 @@ $$
 
 Quartiles:
 $$
-Q_1 = \text{Median of the lower half of the data} \\
+Q_1 = \text{Median of the lower half of the data}
+$$
+
+$$
 Q_3 = \text{Median of the upper half of the data}
 $$
 
