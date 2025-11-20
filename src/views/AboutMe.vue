@@ -30,6 +30,7 @@ const data = reactive({
 });
 
 const posts = ref([]);
+const loadingPosts = ref(true);
 
 onMounted(async () => {
   try {
@@ -38,9 +39,21 @@ onMounted(async () => {
     const blogdata = yaml.load(yamlText) || {};
     const arr = Array.isArray(blogdata.post) ? blogdata.post : [];
     posts.value = arr.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+    // 计算最新三篇的阅读时长（异步，不阻塞渲染）
+    const top3 = posts.value.slice(0, 3);
+    Promise.all(top3.map(async (p) => {
+      try {
+        const file = p.file || `${p.slug}.md`;
+        const r = await fetch(`/posts/${file}?v=${__BUILD_ID__}`, { cache: 'no-store' });
+        const t = await r.text();
+        p.readingTime = estimateReadingMinutes(t);
+      } catch {}
+    })).catch(() => {});
+    loadingPosts.value = false;
   } catch (e) {
     console.error('Failed to load blog.yaml', e);
     posts.value = [];
+    loadingPosts.value = false;
   }
 });
 
@@ -68,13 +81,28 @@ const gotoPost = (slug) => {
   if (slug) router.push(`/blog/${slug}`);
 };
 
-/** Tag color class mapping for preview cards */
+/** Tag color class mapping for preview cards (统一 AboutMe 与 Blog 页面) */
 const mapTagClass = (tag) => {
   const t = String(tag || "").toLowerCase();
-  if (t === "tech") return "tag-tech";
-  if (t === "vue") return "tag-vue";
-  if (t === "nginx") return "tag-nginx";
+  if (["tech"].includes(t)) return "tag-tech";
+  if (["vue"].includes(t)) return "tag-vue";
+  if (["nginx"].includes(t)) return "tag-nginx";
+  if (["statistics"].includes(t)) return "tag-statistics";
+  if (["travel"].includes(t)) return "tag-travel";
+  if (["photo"].includes(t)) return "tag-photo";
+  if (["academic"].includes(t)) return "tag-academic";
   return "tag-default";
+};
+
+/** 估算阅读时长（按 200 wpm） */
+const estimateReadingMinutes = (text) => {
+  const words = String(text || "")
+    .replace(/[$\\`*#_~<>\-]+/g, " ") // 去除符号对词数的影响
+    .replace(/[\r\n]+/g, " ")
+    .split(/\s+/)
+    .filter(Boolean).length;
+  const wpm = 200;
+  return Math.max(1, Math.round(words / wpm));
 };
 </script>
 
@@ -114,29 +142,49 @@ const mapTagClass = (tag) => {
           >
             <h2 class="section-title">Latest Blog</h2>
             <div class="blog-grid">
-              <div
-                v-for="post in posts.slice(0,3)"
-                :key="post.slug"
-                class="blog-item animated-item"
-                role="button"
-                tabindex="0"
-                @click="gotoPost(post.slug)"
-                @keydown.enter="gotoPost(post.slug)"
-              >
-                <h3 class="blog-title">{{ post.title }}</h3>
-                <p class="blog-summary">{{ post.summary }}</p>
+              <!-- Skeleton loading state -->
+              <template v-if="loadingPosts">
+                <div v-for="n in 3" :key="n" class="blog-item skeleton-card">
+                  <div class="skeleton-line skeleton-title"></div>
+                  <div class="skeleton-line skeleton-summary"></div>
+                  <div class="skeleton-line skeleton-summary short"></div>
+                  <div class="blog-bottom">
+                    <div class="blog-meta">
+                      <div class="skeleton-pill"></div>
+                      <div class="skeleton-pill"></div>
+                      <div class="skeleton-pill"></div>
+                    </div>
+                  </div>
+                </div>
+              </template>
 
-                <div class="blog-bottom">
-                  <div class="blog-meta">
+              <!-- Real posts -->
+              <template v-else>
+                <div
+                  v-for="post in posts.slice(0,3)"
+                  :key="post.slug"
+                  class="blog-item animated-item"
+                  role="button"
+                  tabindex="0"
+                  @click="gotoPost(post.slug)"
+                  @keydown.enter="gotoPost(post.slug)"
+                >
+                  <h3 class="blog-title">{{ post.title }}</h3>
+                  <p class="blog-summary">{{ post.summary }}</p>
+
+                  <div class="blog-bottom">
+                    <div class="blog-meta">
                     <span class="blog-date">{{ post.date }}</span>
+                    <span v-if="post.readingTime" class="blog-readtime">· ~{{ post.readingTime }} min read</span>
                     <div v-if="post.tags && post.tags.length > 0" class="blog-tags">
                       <span v-for="tag in post.tags" :key="tag" class="blog-tag" :class="mapTagClass(tag)">
                         {{ tag }}
                       </span>
                     </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </template>
             </div>
             <router-link to="/blog" class="view-all-link">View All Blog →</router-link>
           </section>
@@ -501,10 +549,35 @@ const mapTagClass = (tag) => {
   background: #eafaf5;
   border-color: #cdeee3;
 }
+.blog-tag.tag-statistics {
+  color: #7c3aed;
+  background: #efe7ff;
+  border-color: #e2d9ff;
+}
+.blog-tag.tag-travel {
+  color: #f97316;
+  background: #fff3e8;
+  border-color: #fde3cd;
+}
+.blog-tag.tag-photo {
+  color: #dc2626;
+  background: #fde2e2;
+  border-color: #f9caca;
+}
+.blog-tag.tag-academic {
+  color: #0ea5e9;
+  background: #e6f6ff;
+  border-color: #cdeeff;
+}
 .blog-tag.tag-default {
   color: #475569;
   background: #f1f5f9;
   border-color: #e2e8f0;
+}
+
+.blog-readtime {
+  font-size: 0.85rem;
+  color: #6b7280;
 }
 
 /* Make whole card clickable but keep inner buttons usable */
@@ -525,6 +598,33 @@ const mapTagClass = (tag) => {
 
 .view-all-link:hover {
   text-decoration: underline;
+}
+
+/* Skeleton loading */
+.skeleton-card {
+  position: relative;
+  overflow: hidden;
+}
+.skeleton-line {
+  height: 14px;
+  background: linear-gradient(90deg, #f0f3f8 25%, #e6ecf5 37%, #f0f3f8 63%);
+  border-radius: 6px;
+  margin-bottom: 10px;
+  animation: skeletonShimmer 1.2s ease-in-out infinite;
+}
+.skeleton-title { height: 18px; width: 60%; }
+.skeleton-summary { height: 14px; width: 90%; }
+.skeleton-summary.short { width: 70%; }
+.skeleton-pill {
+  height: 20px;
+  width: 70px;
+  background: linear-gradient(90deg, #f0f3f8 25%, #e6ecf5 37%, #f0f3f8 63%);
+  border-radius: 999px;
+  animation: skeletonShimmer 1.2s ease-in-out infinite;
+}
+@keyframes skeletonShimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
 }
 
 .contact-section {
